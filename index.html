@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>База знаний РФ – ЕГЭ Обществознание</title>
+  <style>
+    /* --- ПЕРЕМЕННЫЕ И ТЕМЫ --- */
+    :root {
+      --bg-main: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-splash: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --accent-hover: #1d4ed8;
+      --card-bg: #ffffff;
+      --card-back-bg: #f1f5f9;
+      --border: #e2e8f0;
+      --line-color: #cbd5e1;
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    [data-theme="dark"] {
+      --bg-main: #0f172a;
+      --bg-surface: #1e293b;
+      --bg-splash: #0f172a;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.2);
+      --accent-hover: #60a5fa;
+      --card-bg: #1e293b;
+      --card-back-bg: #0f172a;
+      --border: #334155;
+      --line-color: #475569;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      -webkit-tap-highlight-color: transparent; 
+      word-break: normal;
+      overflow-wrap: break-word; 
+    }
+
+    /* АГРЕССИВНЫЙ ФИКС СКРОЛЛА ДЛЯ iOS/iPadOS IFRAME */
+    html, body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.4;
+      position: fixed; 
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%; height: 100%;
+      overflow: hidden; 
+      overscroll-behavior: none; 
+      touch-action: none; 
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    svg { width: 1.25rem; height: 1.25rem; fill: currentColor; flex-shrink: 0; }
+
+    /* --- ЗАСТАВКА (SPLASH SCREEN) --- */
+    #splash-screen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--bg-splash);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      text-align: center;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      overflow: hidden;
+      touch-action: none;
+    }
+    #splash-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    
+    .splash-icon {
+      width: min(80px, 12vh); height: min(80px, 12vh);
+      color: var(--accent);
+      margin-bottom: min(1.5rem, 3vh);
+    }
+    .splash-title {
+      font-size: clamp(1.5rem, 6vw, 2.5rem); font-weight: 800;
+      margin-bottom: min(1rem, 2vh); line-height: 1.2;
+    }
+    .splash-desc {
+      font-size: clamp(0.85rem, 3.5vw, 1.1rem); color: var(--text-muted);
+      margin-bottom: min(2.5rem, 4vh); max-width: 500px; line-height: 1.4; padding: 0 10px;
+    }
+    .btn-start {
+      background-color: var(--accent); color: #ffffff; border: none;
+      padding: min(1rem, 2vh) min(3rem, 6vw); font-size: clamp(0.95rem, 3vw, 1.1rem); font-weight: 700;
+      border-radius: 99px; cursor: pointer; box-shadow: var(--shadow-md);
+      animation: pulse 2s infinite; transition: transform 0.2s ease;
+    }
+    .btn-start:active { transform: scale(0.95); }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+      70% { box-shadow: 0 0 0 15px rgba(37, 99, 235, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+    [data-theme="dark"] .btn-start { animation: pulse-dark 2s infinite; }
+    @keyframes pulse-dark {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+      70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    /* Анимация появления карточек */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- ИНТЕРФЕЙС --- */
+    #app-ui {
+      display: flex; flex-direction: column; height: 100%; opacity: 0; visibility: hidden;
+      transition: opacity 0.5s ease 0.2s, visibility 0.5s ease 0.2s;
+    }
+    #app-ui.visible { opacity: 1; visibility: visible; }
+
+    /* Шапка */
+    .header {
+      flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+      padding: clamp(8px, 2vh, 12px) clamp(10px, 3vw, 15px);
+      background-color: var(--bg-surface); border-bottom: 1px solid var(--border); z-index: 10; gap: 10px;
+    }
+    .header-title { font-size: clamp(1.1rem, 4vw, 1.4rem); font-weight: 800; color: var(--text-main); }
+    .header-controls { display: flex; gap: clamp(4px, 1.5vw, 8px); flex-shrink: 0; }
+    .btn-icon {
+      background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-main);
+      width: clamp(30px, 9vw, 36px); height: clamp(30px, 9vw, 36px); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      box-shadow: var(--shadow-sm); transition: transform 0.2s;
+    }
+    .btn-icon:active { transform: scale(0.9); }
+    
+    /* Меню категорий (Горизонтальный скролл) */
+    .categories-bar {
+      display: flex; overflow-x: auto; gap: 8px; padding: 10px 15px;
+      background-color: var(--bg-main); border-bottom: 1px solid var(--border);
+      touch-action: pan-x; overscroll-behavior: contain; flex-shrink: 0;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .categories-bar::-webkit-scrollbar { display: none; }
+    
+    .cat-btn {
+      padding: 8px 16px; font-size: 0.9rem; font-weight: 700;
+      border-radius: 99px; cursor: pointer; color: var(--text-muted);
+      border: 1px solid var(--border); background: var(--bg-surface);
+      transition: all 0.2s; white-space: nowrap; flex-shrink: 0; box-shadow: var(--shadow-sm);
+    }
+    .cat-btn.active {
+      background: var(--accent); color: #fff; border-color: var(--accent);
+    }
+
+    /* Инструкция */
+    .instruction-bar {
+      background-color: var(--accent-soft); color: var(--accent);
+      padding: clamp(6px, 1.5vh, 10px) 15px; text-align: center; 
+      font-size: clamp(0.75rem, 3vw, 0.9rem); font-weight: 600;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+
+    /* --- РАБОЧАЯ ЗОНА (КАРТОЧКИ) --- */
+    .workspace {
+      flex: 1; overflow-y: auto; padding: 20px 15px;
+      -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y;
+      background-color: var(--bg-bank);
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    /* Механика Flip Card */
+    .flip-card {
+      background-color: transparent; width: 100%; aspect-ratio: 4 / 3; min-height: 220px;
+      perspective: 1000px; cursor: pointer; opacity: 0;
+    }
+    .flip-card-inner {
+      position: relative; width: 100%; height: 100%; text-align: center;
+      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d;
+      box-shadow: var(--shadow-md); border-radius: var(--radius-lg);
+    }
+    .flip-card.is-flipped .flip-card-inner { transform: rotateY(180deg); }
+
+    .flip-card-front, .flip-card-back {
+      position: absolute; width: 100%; height: 100%;
+      -webkit-backface-visibility: hidden; backface-visibility: hidden;
+      border-radius: var(--radius-lg); padding: 20px;
+      display: flex; flex-direction: column; justify-content: center;
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    
+    .flip-card-front {
+      background-color: var(--card-bg); align-items: center;
+    }
+    .card-icon {
+      width: 48px; height: 48px; color: var(--accent); margin-bottom: 15px;
+      background: var(--accent-soft); padding: 10px; border-radius: 50%;
+    }
+    .card-title { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
+    .card-hint { font-size: 0.8rem; color: var(--accent); font-weight: 700; margin-top: 15px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .flip-card-back {
+      background-color: var(--card-back-bg); transform: rotateY(180deg);
+      align-items: flex-start; text-align: left; justify-content: flex-start;
+      overflow-y: auto; touch-action: pan-y;
+      -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+    }
+    .flip-card-back::-webkit-scrollbar { width: 4px; }
+    .flip-card-back::-webkit-scrollbar-thumb { background: var(--line-color); border-radius: 4px; }
+    
+    .back-title { font-size: 0.9rem; font-weight: 800; color: var(--accent); margin-bottom: 12px; border-bottom: 1px solid var(--line-color); padding-bottom: 5px; width: 100%; }
+    .facts-list { list-style: none; padding: 0; margin: 0; width: 100%; }
+    .facts-list li {
+      font-size: 0.9rem; color: var(--text-main); margin-bottom: 10px; line-height: 1.4;
+      position: relative; padding-left: 16px;
+    }
+    .facts-list li::before {
+      content: "•"; position: absolute; left: 0; color: var(--accent); font-weight: bold; font-size: 1.2rem; top: -4px;
+    }
+    
+  </style>
+</head>
+<body>
+
+  <!-- ИКОНКИ -->
+  <svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="icon-science" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 2v2M15 2v2M9 22v-4M15 22v-4M2 9h20M2 15h20M12 2v20M2 12h20"></path>
+        <circle cx="12" cy="12" r="10"></circle>
+      </symbol>
+      <symbol id="icon-bank" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="10" width="18" height="12" rx="2"></rect>
+        <polygon points="12 2 2 7 22 7"></polygon>
+        <line x1="12" y1="22" x2="12" y2="10"></line>
+        <line x1="6" y1="22" x2="6" y2="10"></line>
+        <line x1="18" y1="22" x2="18" y2="10"></line>
+      </symbol>
+      <symbol id="icon-corp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+        <path d="M9 22v-4h6v4"></path>
+        <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M16 10h.01M8 10h.01M8 14h.01M12 14h.01M16 14h.01"></path>
+      </symbol>
+      <symbol id="icon-family" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </symbol>
+      <symbol id="icon-party" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </symbol>
+      <symbol id="icon-sun" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18.75a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75zM6.166 17.834a.75.75 0 00-1.06 1.06l1.59 1.591a.75.75 0 101.06-1.061l-1.59-1.59zM4.5 12a.75.75 0 01-.75.75H1.5a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM6.166 6.166a.75.75 0 001.06-1.06l-1.59-1.59a.75.75 0 00-1.061 1.06l1.59 1.59z"/></symbol>
+      <symbol id="icon-moon" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/></symbol>
+      <symbol id="icon-maximize" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></symbol>
+      <symbol id="icon-minimize" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></symbol>
+      <symbol id="icon-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></symbol>
+    </defs>
+  </svg>
+
+  <!-- ЗАСТАВКА -->
+  <div id="splash-screen">
+    <svg class="splash-icon"><use href="#icon-book"></use></svg>
+    <h1 class="splash-title">БАЗА ЗНАНИЙ РФ</h1>
+    <p class="splash-desc">Справочник для 25 задания ЕГЭ. Кликайте на карточки, чтобы запомнить важнейшие факты о России.</p>
+    <button class="btn-start" id="btn-start">Начать изучение</button>
+  </div>
+
+  <!-- ИНТЕРФЕЙС -->
+  <div id="app-ui">
+    
+    <header class="header">
+      <div class="header-title">База знаний РФ</div>
+      <div class="header-controls">
+        <button class="btn-icon" id="btn-theme" title="Сменить тему">
+          <svg><use id="icon-theme-use" href="#icon-moon"></use></svg>
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" title="На весь экран" style="background:var(--accent); color:#fff; border-color:var(--accent);">
+          <svg><use id="icon-fullscreen-use" href="#icon-maximize"></use></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="categories-bar" id="categories-bar">
+      <button class="cat-btn active" data-filter="all">Все карточки</button>
+      <button class="cat-btn" data-filter="science">Деятели науки и искусства</button>
+      <button class="cat-btn" data-filter="corp">Транснациональные корпорации</button>
+      <button class="cat-btn" data-filter="bank">Крупнейшие банки</button>
+      <button class="cat-btn" data-filter="family">Поддержка семей</button>
+      <button class="cat-btn" data-filter="party">Политические партии</button>
+    </div>
+
+    <div class="instruction-bar">
+      Нажмите на карточку, чтобы перевернуть её и прочитать факты.
+    </div>
+
+    <!-- РАБОЧАЯ ЗОНА -->
+    <main class="workspace" id="workspace">
+      <div class="cards-grid" id="cards-grid">
+        <!-- Карточки генерируются JS -->
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    let currentTheme = 'light';
+
+    // --- БАЗА ЗНАНИЙ (РЕАЛИИ РФ ДЛЯ 25 ЗАДАНИЯ) ---
+    const factsData = [
+      {
+        category: "science",
+        icon: "icon-science",
+        title: "И.В. Курчатов",
+        facts: [
+          "выдающийся советский физик–ядерщик",
+          "является создателем советской атомной бомбы",
+          "основал Институт атомной энергии",
+          "руководил созданием первой в мире промышленной атомной электростанции"
+        ]
+      },
+      {
+        category: "science",
+        icon: "icon-science",
+        title: "Ж.И. Алферов",
+        facts: [
+          "российский ученый–физик",
+          "является лауреатом Нобелевской премии по физике",
+          "разработал полупроводниковые гетероструктуры",
+          "внес огромный вклад в создание современных информационных технологий и лазеров"
+        ]
+      },
+      {
+        category: "science",
+        icon: "icon-science",
+        title: "Н.С. Михалков",
+        facts: [
+          "известный советский и российский кинорежиссер",
+          "является обладателем престижной премии «Оскар»",
+          "создал ряд культовых фильмов, таких как «Утомленные солнцем»",
+          "активно участвует в общественной и культурной жизни современной России"
+        ]
+      },
+      {
+        category: "science",
+        icon: "icon-science",
+        title: "Д.Л. Мацуев",
+        facts: [
+          "выдающийся современный российский пианист–виртуоз",
+          "является Народным артистом Российской Федерации",
+          "активно занимается популяризацией классической музыки среди молодежи",
+          "выступает организатором крупных музыкальных фестивалей в регионах РФ"
+        ]
+      },
+      {
+        category: "corp",
+        icon: "icon-corp",
+        title: "ПАО «Газпром»",
+        facts: [
+          "глобальная энергетическая транснациональная компания",
+          "занимает лидирующие позиции по добыче природного газа в мире",
+          "обеспечивает значительную долю налоговых поступлений в бюджет РФ",
+          "реализует масштабные международные инфраструктурные проекты"
+        ]
+      },
+      {
+        category: "corp",
+        icon: "icon-corp",
+        title: "ПАО «Лукойл»",
+        facts: [
+          "одна из крупнейших публичных вертикально интегрированных нефтегазовых компаний",
+          "осуществляет свою производственную деятельность в десятках стран мира",
+          "занимается добычей, переработкой и сбытом нефтепродуктов",
+          "является одним из ключевых работодателей в реальном секторе экономики РФ"
+        ]
+      },
+      {
+        category: "corp",
+        icon: "icon-corp",
+        title: "«Яндекс»",
+        facts: [
+          "крупнейшая российская транснациональная компания в сфере информационных технологий",
+          "является создателем ведущей отечественной поисковой системы",
+          "развивает масштабную экосистему цифровых сервисов – от такси до доставки еды",
+          "активно внедряет технологии искусственного интеллекта и беспилотного транспорта"
+        ]
+      },
+      {
+        category: "bank",
+        icon: "icon-bank",
+        title: "Сбербанк",
+        facts: [
+          "является крупнейшим системообразующим банком в Российской Федерации",
+          "ключевой акционер банка – государство в лице Фонда национального благосостояния",
+          "обслуживает подавляющее большинство счетов физических лиц в стране",
+          "активно трансформируется в широкую технологическую экосистему"
+        ]
+      },
+      {
+        category: "bank",
+        icon: "icon-bank",
+        title: "ВТБ",
+        facts: [
+          "второй по величине активов коммерческий банк в Российской Федерации",
+          "играет ведущую роль в сфере корпоративного и инвестиционного кредитования",
+          "активно участвует в реализации крупных государственных инфраструктурных проектов",
+          "имеет разветвленную международную сеть филиалов и представительств"
+        ]
+      },
+      {
+        category: "bank",
+        icon: "icon-bank",
+        title: "Альфа-Банк",
+        facts: [
+          "крупнейший универсальный частный банк в России",
+          "предоставляет полный спектр финансовых услуг для бизнеса и физических лиц",
+          "занимает лидирующие позиции в развитии мобильного и цифрового банкинга",
+          "играет важную роль в кредитовании малого и среднего предпринимательства"
+        ]
+      },
+      {
+        category: "family",
+        icon: "icon-family",
+        title: "Материнский капитал",
+        facts: [
+          "форма государственной поддержки, предоставляемая при рождении детей",
+          "средства можно направить на улучшение жилищных условий семьи",
+          "позволяет оплатить образование ребенка в профильных учреждениях РФ",
+          "является ключевым элементом демографической политики государства"
+        ]
+      },
+      {
+        category: "family",
+        icon: "icon-family",
+        title: "Семейная ипотека",
+        facts: [
+          "программа льготного государственного жилищного кредитования",
+          "позволяет семьям с детьми получить ипотечный кредит по сниженной ставке",
+          "разницу между льготной и рыночной ставкой банкам компенсирует государство",
+          "стимулирует развитие строительной отрасли и улучшает качество жизни семей"
+        ]
+      },
+      {
+        category: "family",
+        icon: "icon-family",
+        title: "Единое пособие",
+        facts: [
+          "ежемесячная комплексная финансовая поддержка семей с низкими доходами",
+          "предоставляется беременным женщинам и семьям до достижения ребенком 17 лет",
+          "размер выплаты зависит от дефицита дохода конкретной семьи",
+          "назначается по принципу адресности и оценки реальной нуждаемости граждан"
+        ]
+      },
+      {
+        category: "party",
+        icon: "icon-party",
+        title: "«Единая Россия»",
+        facts: [
+          "крупнейшая правящая политическая партия центристского и консервативного толка",
+          "стабильно обладает парламентским большинством в Государственной Думе РФ",
+          "выступает за сильное социальное государство и защиту традиционных ценностей",
+          "ее представители возглавляют большинство регионов Российской Федерации"
+        ]
+      },
+      {
+        category: "party",
+        icon: "icon-party",
+        title: "КПРФ",
+        facts: [
+          "Коммунистическая партия Российской Федерации, представляющая левый фланг",
+          "является одной из старейших и наиболее стабильных оппозиционных партий",
+          "последовательно выступает за социалистический путь развития экономики",
+          "требует усиления роли государства в экономике и национализации базовых отраслей"
+        ]
+      },
+      {
+        category: "party",
+        icon: "icon-party",
+        title: "ЛДПР",
+        facts: [
+          "Либерально–демократическая партия России",
+          "придерживается яркой патриотической, государственнической риторики",
+          "является одной из старейших парламентских партий современной России",
+          "выступает за жесткую централизацию власти и защиту национальных интересов"
+        ]
+      },
+      {
+        category: "party",
+        icon: "icon-party",
+        title: "«Новые люди»",
+        facts: [
+          "парламентская политическая партия правоцентристского толка",
+          "ориентирована на поддержку малого и среднего предпринимательства",
+          "выступает за обновление политической системы и прогрессивное развитие",
+          "активно привлекает в свои ряды молодежь и представителей бизнес–сообщества"
+        ]
+      }
+    ];
+
+    // --- АГРЕССИВНЫЙ ФИКС СКРОЛЛА (iOS / IFRAME) ---
+    document.addEventListener('touchmove', function(e) {
+      if (e.touches.length > 1) return;
+      
+      const workspace = e.target.closest('.workspace');
+      const categoriesBar = e.target.closest('.categories-bar');
+      const cardBack = e.target.closest('.flip-card-back');
+
+      let scrollable = cardBack || workspace || categoriesBar;
+
+      if (scrollable) {
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+        const dx = touchX - (scrollable.lastTouchX || touchX);
+        const dy = touchY - (scrollable.lastTouchY || touchY);
+        
+        scrollable.lastTouchX = touchX;
+        scrollable.lastTouchY = touchY;
+
+        if (scrollable.classList.contains('categories-bar')) {
+            const isAtLeft = scrollable.scrollLeft === 0;
+            const isAtRight = scrollable.scrollWidth - scrollable.scrollLeft <= scrollable.clientWidth + 1;
+            if ((isAtLeft && dx > 0) || (isAtRight && dx < 0)) {
+                if (e.cancelable) e.preventDefault();
+            }
+        } else {
+            const isAtTop = scrollable.scrollTop === 0;
+            const isAtBottom = scrollable.scrollHeight - scrollable.scrollTop <= scrollable.clientHeight + 1;
+            if ((isAtTop && dy > 0) || (isAtBottom && dy < 0)) {
+                if (e.cancelable) e.preventDefault();
+            }
+        }
+      } else {
+        if (e.cancelable) e.preventDefault();
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchstart', function(e) {
+      const scrollable = e.target.closest('.workspace, .categories-bar, .flip-card-back');
+      if (scrollable) {
+        scrollable.lastTouchX = e.touches[0].clientX;
+        scrollable.lastTouchY = e.touches[0].clientY;
+      }
+    }, { passive: false });
+
+    // --- ЛОГИКА РЕНДЕРИНГА И ФИЛЬТРАЦИИ ---
+    const cardsGrid = document.getElementById('cards-grid');
+    const catBtns = document.querySelectorAll('.cat-btn');
+
+    function renderCards(filter = 'all') {
+      cardsGrid.innerHTML = '';
+      
+      const filteredData = filter === 'all' ? factsData : factsData.filter(item => item.category === filter);
+      
+      filteredData.forEach((item, index) => {
+        const factsHTML = item.facts.map(fact => `<li>${fact}</li>`).join('');
+        
+        const card = document.createElement('div');
+        card.className = 'flip-card';
+        card.style.animation = `fadeIn 0.5s ease forwards ${index * 0.05}s`;
+        
+        card.innerHTML = `
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <svg class="card-icon"><use href="#${item.icon}"></use></svg>
+              <div class="card-title">${item.title}</div>
+              <div class="card-hint">Нажми, чтобы выучить</div>
+            </div>
+            <div class="flip-card-back">
+              <div class="back-title">${item.title}</div>
+              <ul class="facts-list">
+                ${factsHTML}
+              </ul>
+            </div>
+          </div>
+        `;
+        
+        card.addEventListener('click', function() {
+          this.classList.toggle('is-flipped');
+          if(navigator.vibrate) navigator.vibrate(15);
+        });
+
+        cardsGrid.appendChild(card);
+      });
+    }
+
+    catBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        catBtns.forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        
+        const filter = e.target.dataset.filter;
+        renderCards(filter);
+        if(navigator.vibrate) navigator.vibrate(15);
+      });
+    });
+
+    // --- СИСТЕМНЫЕ ФУНКЦИИ ---
+    const htmlEl = document.documentElement;
+    function requestFullScreenSafe() {
+      try {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          if (htmlEl.requestFullscreen) {
+            const req = htmlEl.requestFullscreen();
+            if (req && typeof req.catch === 'function') req.catch(() => {});
+          } else if (htmlEl.webkitRequestFullscreen) {
+            htmlEl.webkitRequestFullscreen(); 
+          }
+        }
+      } catch (e) { console.warn("Fullscreen API не поддерживается:", e); }
+    }
+
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      try {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) requestFullScreenSafe();
+        else {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+      } catch (e) {}
+    });
+
+    const updateFullscreenIcon = () => {
+      const isFull = document.fullscreenElement || document.webkitFullscreenElement;
+      document.getElementById('icon-fullscreen-use').setAttribute('href', isFull ? '#icon-minimize' : '#icon-maximize');
+    };
+    document.addEventListener('fullscreenchange', updateFullscreenIcon);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+
+    document.getElementById('btn-theme').addEventListener('click', () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      htmlEl.setAttribute('data-theme', currentTheme);
+      document.getElementById('icon-theme-use').setAttribute('href', currentTheme === 'light' ? '#icon-moon' : '#icon-sun');
+    });
+
+    document.getElementById('btn-start').addEventListener('click', () => {
+      try { requestFullScreenSafe(); } catch (e) {}
+      const splashScreen = document.getElementById('splash-screen');
+      splashScreen.classList.add('hidden');
+      setTimeout(() => {
+        splashScreen.style.display = 'none';
+        document.getElementById('app-ui').classList.add('visible');
+        renderCards('all'); 
+      }, 500);
+    });
+
+  </script>
+</body>
+</html>
