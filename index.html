@@ -157,8 +157,11 @@
       display: flex; overflow-x: auto; gap: 8px; padding: 10px 15px;
       background-color: var(--bg-main); border-bottom: 1px solid var(--border);
       touch-action: pan-x; overscroll-behavior: contain; flex-shrink: 0;
+      /* Скрытие стандартного скроллбара, но оставляем возможность перетаскивания */
       scrollbar-width: none; -ms-overflow-style: none;
+      cursor: grab;
     }
+    .categories-bar:active { cursor: grabbing; }
     .categories-bar::-webkit-scrollbar { display: none; }
     
     .cat-btn {
@@ -166,6 +169,7 @@
       border-radius: 99px; cursor: pointer; color: var(--text-muted);
       border: 1px solid var(--border); background: var(--bg-surface);
       transition: all 0.2s; white-space: nowrap; flex-shrink: 0; box-shadow: var(--shadow-sm);
+      user-select: none;
     }
     .cat-btn.active {
       background: var(--accent); color: #fff; border-color: var(--accent);
@@ -276,6 +280,9 @@
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
         <polyline points="22 4 12 14.01 9 11.01"></polyline>
       </symbol>
+      <symbol id="icon-law" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </symbol>
       <symbol id="icon-sun" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18.75a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75zM6.166 17.834a.75.75 0 00-1.06 1.06l1.59 1.591a.75.75 0 101.06-1.061l-1.59-1.59zM4.5 12a.75.75 0 01-.75.75H1.5a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM6.166 6.166a.75.75 0 001.06-1.06l-1.59-1.59a.75.75 0 00-1.061 1.06l1.59 1.59z"/></symbol>
       <symbol id="icon-moon" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/></symbol>
       <symbol id="icon-maximize" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></symbol>
@@ -314,6 +321,7 @@
       <button class="cat-btn" data-filter="bank">Крупнейшие банки</button>
       <button class="cat-btn" data-filter="family">Поддержка семей</button>
       <button class="cat-btn" data-filter="party">Политические партии</button>
+      <button class="cat-btn" data-filter="law_eco">Право и экология</button>
     </div>
 
     <div class="instruction-bar">
@@ -520,6 +528,28 @@
           "выступает за обновление политической системы и прогрессивное развитие",
           "активно привлекает в свои ряды молодежь и представителей бизнес–сообщества"
         ]
+      },
+      {
+        category: "law_eco",
+        icon: "icon-law",
+        title: "Прокуратура РФ",
+        facts: [
+          "осуществляет строгий надзор за соблюдением Конституции РФ и исполнением законов",
+          "поддерживает государственное обвинение в уголовном судопроизводстве",
+          "координирует деятельность правоохранительных органов по борьбе с преступностью",
+          "выступает важнейшим институтом защиты прав и свобод граждан"
+        ]
+      },
+      {
+        category: "law_eco",
+        icon: "icon-law",
+        title: "Экологические инициативы РФ",
+        facts: [
+          "на государственном уровне реализуется масштабный национальный проект «Экология»",
+          "активно внедряются системы сортировки и переработки твердых коммунальных отходов",
+          "ужесточаются санкции за нарушение природоохранного законодательства предприятиями",
+          "создаются и расширяются новые государственные природные заповедники и парки"
+        ]
       }
     ];
 
@@ -568,6 +598,39 @@
       }
     }, { passive: false });
 
+    // --- ЛОГИКА ГОРИЗОНТАЛЬНОГО DRAG-TO-SCROLL (ДЛЯ ПК) ---
+    const categoriesBar = document.getElementById('categories-bar');
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let isDragging = false;
+
+    categoriesBar.addEventListener('mousedown', (e) => {
+      isDown = true;
+      isDragging = false;
+      categoriesBar.style.cursor = 'grabbing';
+      startX = e.pageX - categoriesBar.offsetLeft;
+      scrollLeft = categoriesBar.scrollLeft;
+    });
+    categoriesBar.addEventListener('mouseleave', () => {
+      isDown = false;
+      categoriesBar.style.cursor = 'grab';
+    });
+    categoriesBar.addEventListener('mouseup', () => {
+      isDown = false;
+      categoriesBar.style.cursor = 'grab';
+      // Небольшая задержка, чтобы предотвратить случайный "клик" при отпускании мыши
+      setTimeout(() => isDragging = false, 50);
+    });
+    categoriesBar.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      isDragging = true;
+      const x = e.pageX - categoriesBar.offsetLeft;
+      const walk = (x - startX) * 2; // Ускоритель скролла
+      categoriesBar.scrollLeft = scrollLeft - walk;
+    });
+
     // --- ЛОГИКА РЕНДЕРИНГА И ФИЛЬТРАЦИИ ---
     const cardsGrid = document.getElementById('cards-grid');
     const catBtns = document.querySelectorAll('.cat-btn');
@@ -611,6 +674,12 @@
 
     catBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
+        // Блокируем клик, если пользователь просто перетаскивал меню мышкой
+        if (isDragging) {
+           e.preventDefault();
+           return;
+        }
+
         catBtns.forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
         
